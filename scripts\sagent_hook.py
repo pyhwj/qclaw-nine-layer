@@ -1,0 +1,199 @@
+#!/usr/bin/env python3
+"""
+SAGENT 全局路由钩子 (Global Hook) v2 — 整合 KernelGOD 系统控制
+
+每消息前置: sagent_hook.py --route "<message>"
+
+流程:
+  1. 加载 RouterV2 (5级评分)
+  2. 路由用户消息 → 返回匹配技能
+  3. 如果消息是「任务型」（非闲聊），运行 kgod_shell 写入系统计划
+  4. 输出 JSON (stdout)
+"""
+
+import sys, os, json, subprocess
+
+SAGENT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                          'skills', 'self-improving-agent', 'sagent')
+sys.path.insert(0, SAGENT_DIR)
+
+WORKSAPCE = os.path.dirname(os.path.abspath(__file__))
+MEMORY_DIR = os.path.join(WORKSAPCE, 'memory')
+KGOD_SHELL = os.path.join(WORKSAPCE, 'skills', 'self-improving-agent', 'sagent', 'kgod_shell.py')
+MANDATE_FILE = os.path.join(MEMORY_DIR, '_system_mandate.md')
+
+# 闲聊关键词 — 这些消息不走系统控制
+CHAT_KEYWORDS = ['你好', 'hi', 'hello', '在吗', '早上好', '晚上好', '谢谢',
+                 '哈哈', '好的', 'ok', 'good', 'bye', '再见', '嗯', '对',
+                 '不对', '不是', '有道理', '明白了', '收到', '了解']
+
+def is_chat(message):
+    msg = message.strip().lower()
+    return any(kw in msg for kw in CHAT_KEYWORDS) or len(msg) < 6
+
+from router_v2 import RouterV2
+
+def route(message, top_k=5, min_confidence=0.2):
+    router = RouterV2().load()
+    result = router.route(message)
+    matches = []
+    for r in result.get('results', [])[:top_k]:
+        if r.get('confidence', 0) >= min_confidence:
+            matches.append({
+                'skill_id': r.get('id', ''),
+                'skill_name': r.get('name', ''),
+                'confidence': round(r.get('confidence', 0), 4),
+                'matched_by': r.get('matched_by', ''),
+                'status': r.get('status', '?')
+            })
+    return {
+        'query': message[:120],
+        'matches': matches,
+        'top_match': matches[0] if matches else None,
+        'total_skills': len(router.skills),
+        'total_aliases': len(router.aliases)
+    }
+
+def run_system_plan(task):
+    """运行 KernelGOD 系统壳层，输出计划到记忆文件"""
+    if not os.path.exists(KGOD_SHELL):
+        return {'error': 'kgod_shell not found'}
+    
+    python = r'D:\openclaw\tools\python313\python.exe'
+    try:
+        result = subprocess.run(
+            [python, KGOD_SHELL, task],
+            capture_output=True, text=True, timeout=15,
+            encoding='utf-8', errors='replace'
+        )
+        output = result.stdout or ''
+        
+        # 提取 JSON 计划（在两个标记之间）
+        plan_start = output.find('=== JSON_PLAN_START ===')
+        plan_end = output.find('=== JSON_PLAN_END ===')
+        if plan_start >= 0 and plan_end > plan_start:
+            plan_json = output[plan_start + 24:plan_end].strip()
+            try:
+                plan = json.loads(plan_json)
+            except:
+                plan = {'raw_output': output[:200]}
+        else:
+            plan = {'raw_output': output[:200]}
+        
+        return {'ok': True, 'plan': plan}
+    except Exception as e:
+        return {'error': str(e)}
+
+def write_mandate(message, route_result, system_result):
+    """写入系统指令文件 → LLM 在上下文中必须读到"""
+    top = route_result.get('top_match') or {}
+    plan = system_result.get('plan', {}) if system_result else {}
+    # fallback: 如果 plan 有 raw_output，从其中提取步骤
+    raw = plan.get('raw_output', '')
+    if '步骤' in raw and (not plan.get('steps')):
+        steps_raw = []
+        for line in raw.split('\n'):
+            import re
+            m = re.match(r'\s*\d+\.\s+(.+)', line)
+            if m:
+                steps_raw.append(m.group(1))
+        if steps_raw:
+            plan['steps'] = steps_raw
+    steps = plan.get('steps', [])
+    # 确保第0步是CLI验证
+    cli_step = '[强制] CLI验证: node --check / python -c compile'
+    art_step = '[强制] 写artifact到memory/'
+    if steps and steps[0] != cli_step:
+        steps = [cli_step] + steps
+    if steps and steps[-1] != art_step:
+        steps = steps + [art_step]
+    
+    mandate = f"""# ? 系统指令 (System Mandate) — 不可绕过
+
+> 此文件由 KernelGOD Hook v2 自动生成
+> LLM 必须在本次响应前读完并遵循
+
+## 任务原文
+{message}
+
+## S1 路由结果
+- 匹配技能: {top.get('skill_name', '无')} (置信度: {top.get('confidence', 0)})
+- 总技能库: {route_result.get('total_skills', 0)} 技能 / {route_result.get('total_aliases', 0)} 别名
+
+## 技能加载 [关键]
+- **必须先加载**: skills/{top.get('skill_id', '')}/SKILL.md
+- 路径: D:\openclaw\.openclaw\workspace\skills\{top.get('skill_id', '')}\SKILL.md
+- 按SKILL.md中的触发词、模板、反模式执行
+
+## S2 系统方案
+- 控制模式: {plan.get('mode', 'system_driven')}
+- 复杂度: {plan.get('complexity', '未评估')}
+
+### 执行步骤 ({len(steps)})
+"""
+    for i, s in enumerate(steps, 1):
+        mandate += f"{i}. {s}\n"
+    
+    mandate += f"""
+## 强制规则（不可违反）
+
+### 规则1: CLI优先
+- 禁止LLM目测/推测代码问题
+- 任何代码修改前先跑: node --check / python -c compile
+- CLI输出 > LLM猜测
+
+### 规则2: Thinking 预算
+- thinking 块超过 3 个推测词 → 立即停止
+- 切到 CLI 验证获取事实
+
+### 规则3: 完成写 artifact
+- 所有步骤执行完毕后必须写入 memory/YYYY-MM-DD.md
+- 写入内容: 做了什么、怎么做的、踩了什么坑
+
+## S6 审计约束
+- 最大重试次数: {plan.get('max_retries', 2)}
+- 降级策略: {plan.get('degrade_plan', '无')}
+- 审计路径: skills/self-improving-agent/evolution/llm_audit_trail.jsonl
+
+## S9 完成条件
+- [ ] 所有步骤执行完毕
+- [ ] 校验通过 (≤{plan.get('max_retries', 2)}次重试)
+- [ ] 教训写入 memory/
+---
+_Generated by KernelGOD v8 Hook · {__import__('datetime').datetime.now().isoformat()}_
+"""
+    os.makedirs(MEMORY_DIR, exist_ok=True)
+    with open(MANDATE_FILE, 'w', encoding='utf-8') as f:
+        f.write(mandate)
+    return mandate
+
+def main():
+    if '--route' in sys.argv:
+        idx = sys.argv.index('--route')
+        message = sys.argv[idx + 1] if idx + 1 < len(sys.argv) else ''
+        if not message:
+            message = sys.stdin.read().strip()
+        
+        # S1: 路由
+        route_result = route(message)
+        
+        output = {
+            'route': route_result,
+            'is_chat': is_chat(message),
+        }
+        
+        # 任务型消息 → 跑系统计划
+        if not is_chat(message):
+            system_result = run_system_plan(message)
+            output['system'] = system_result
+            
+            if system_result.get('ok'):
+                mandate = write_mandate(message, route_result, system_result)
+                output['mandate'] = MANDATE_FILE
+        
+        print(json.dumps(output, ensure_ascii=False))
+    else:
+        print(__doc__)
+
+if __name__ == '__main__':
+    main()
