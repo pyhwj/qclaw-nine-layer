@@ -1,0 +1,1854 @@
+{
+  "_schema": "self-improving-agent/skill-registry-v2",
+  "_description": "技能注册中心 -- 记录所有自动结晶的技能，支持版本控制和回滚",
+  "_inspired_by": "GenericAgent (lsdefine/GenericAgent) MIT License",
+  "_last_updated": "2026-05-24T01:51:00",
+  "meta": {
+    "seed_lines": 3000,
+    "total_skills": 48,
+    "stable_skills": 47,
+    "beta_skills": 0,
+    "failed_skills": 5
+  },
+  "skills": [
+    {
+      "id": "skill-pdf-extraction",
+      "name": "PDF text extraction fallback",
+      "version": "2.1.0",
+      "status": "stable",
+      "created": "2026-05-10",
+      "last_tested": "2026-05-10",
+      "test_count": 3,
+      "fail_count": 0,
+      "trigger": "Node.js pdfjs-dist fails or PDF text extraction needed",
+      "pipeline": [
+        "Try PyMuPDF (fitz): pip install pymupdf",
+        "fitz.open(path) -> page.get_text() per page",
+        "Fallback to pdfminer.six if fails"
+      ],
+      "source_pattern": "learned-patterns.md#pattern1",
+      "tags": [
+        "pdf",
+        "text-extraction",
+        "fallback"
+      ],
+      "success_rate": 1.0
+    },
+    {
+      "id": "skill-spa-extraction",
+      "name": "SPA/Vue.js page content extraction",
+      "version": "2.0.0",
+      "status": "stable",
+      "created": "2026-05-10",
+      "last_tested": "2026-05-10",
+      "test_count": 2,
+      "fail_count": 0,
+      "trigger": "curl only returns SPA empty shell HTML (Vue.js etc)",
+      "pipeline": [
+        "Bypass DNS via IP + --resolve to get JS bundle",
+        "Search JS for service-api/ to find backend API routes",
+        "Request JSON data directly via API route",
+        "Fallback to xbrowser (Edge headed mode) if API restricted"
+      ],
+      "source_pattern": "learned-patterns.md#pattern2",
+      "tags": [
+        "spa",
+        "vue",
+        "web-scraping",
+        "api-discovery"
+      ],
+      "success_rate": 1.0
+    },
+    {
+      "id": "skill-dns-bypass",
+      "name": "DNS block bypass",
+      "version": "3.0.0",
+      "status": "stable",
+      "created": "2026-05-10",
+      "last_tested": "2026-05-14",
+      "test_count": 5,
+      "fail_count": 1,
+      "trigger": "Domain DNS hijacked or unresolvable",
+      "pipeline": [
+        "nslookup domain 8.8.8.8 to get real IP",
+        "curl.exe -s --resolve domain:443:IP https://domain/",
+        "Python: ProxyHandler({}) to bypass system proxy",
+        "Last resort: modify hosts file temporarily"
+      ],
+      "source_pattern": "learned-patterns.md#pattern3",
+      "tags": [
+        "dns",
+        "bypass",
+        "network"
+      ],
+      "success_rate": 0.8
+    },
+    {
+      "id": "skill-encoding-handling",
+      "name": "Windows encoding handling",
+      "version": "2.0.0",
+      "status": "stable",
+      "created": "2026-05-10",
+      "last_tested": "2026-05-14",
+      "test_count": 6,
+      "fail_count": 0,
+      "trigger": "Unicode characters cause UnicodeEncodeError under PowerShell GBK",
+      "pipeline": [
+        "Avoid printing Chinese/special chars directly to terminal",
+        "Write to file (encoding='utf-8') instead",
+        "Python: sys.stdout.reconfigure(encoding='utf-8', errors='replace')",
+        "Use write_file.py (qclaw-text-file) for final output"
+      ],
+      "source_pattern": "learned-patterns.md#pattern4",
+      "tags": [
+        "encoding",
+        "unicode",
+        "windows",
+        "gbk"
+      ],
+      "success_rate": 1.0
+    },
+    {
+      "id": "skill-cross-session",
+      "name": "Cross-session continuity",
+      "version": "1.2.0",
+      "status": "stable",
+      "created": "2026-05-10",
+      "last_tested": "2026-05-13",
+      "test_count": 4,
+      "fail_count": 0,
+      "trigger": "Need to continue work from previous session",
+      "pipeline": [
+        "Read LCM summary for previous session context",
+        "Find artifact files written by previous session",
+        "Skip previously verified failed paths",
+        "Use already confirmed working solutions directly"
+      ],
+      "source_pattern": "learned-patterns.md#pattern5",
+      "tags": [
+        "session",
+        "continuity",
+        "context"
+      ],
+      "success_rate": 1.0
+    },
+    {
+      "id": "skill-preference-registration",
+      "name": "User preference triple sync",
+      "version": "1.0.0",
+      "status": "stable",
+      "created": "2026-05-10",
+      "last_tested": "2026-05-14",
+      "test_count": 3,
+      "fail_count": 0,
+      "trigger": "User specified a tool preference or workflow",
+      "pipeline": [
+        "Write to memory/YYYY-MM-DD.md (today's memory)",
+        "Write to TOOLS.md (tool preferences)",
+        "Write to MEMORY.md (long-term memory - user preferences)"
+      ],
+      "source_pattern": "learned-patterns.md#pattern6",
+      "tags": [
+        "preference",
+        "registration",
+        "user"
+      ],
+      "success_rate": 1.0
+    },
+    {
+      "id": "skill-cmd-compatibility",
+      "name": "Command-line compatibility",
+      "version": "1.0.0",
+      "status": "stable",
+      "created": "2026-05-10",
+      "last_tested": "2026-05-14",
+      "test_count": 5,
+      "fail_count": 1,
+      "trigger": "Running shell commands under PowerShell",
+      "pipeline": [
+        "Use curl.exe not curl (PowerShell alias Invoke-WebRequest)",
+        "Use cmd /c for commands containing &&",
+        "pip [notice] is just upgrade reminder, not an error",
+        "Judge success by actual functionality not exit code"
+      ],
+      "source_pattern": "learned-patterns.md#pattern7",
+      "tags": [
+        "cmd",
+        "powershell",
+        "compatibility"
+      ],
+      "success_rate": 0.8
+    },
+    {
+      "id": "skill-auto-008",
+      "name": "GenericAgent_Architecture_Migration",
+      "version": "1.0.0",
+      "status": "stable",
+      "created": "2026-05-14",
+      "last_tested": "2026-05-14",
+      "test_count": 1,
+      "fail_count": 0,
+      "trigger": "Need to upgrade skill system with self-evolving architecture",
+      "pipeline": [
+        "Study GenericAgent README for architecture design patterns",
+        "Create skill-registry.json as versioned skill catalog",
+        "Build crystallize.py pipeline for auto skill extraction",
+        "Add validate.py for integrity checking",
+        "Add rollback.py for version rollback support",
+        "Upgrade SKILL.md with layered memory (L0-L4) and 9 atomic tool mapping",
+        "Set up weekly cron for automated evolution maintenance"
+      ],
+      "source_session": "2026-05-14 GenericAgent integration session",
+      "tags": [
+        "generic-agent",
+        "architecture",
+        "migration",
+        "evolution"
+      ],
+      "evolution_notes": "自动结晶自任务执行路径",
+      "success_rate": 1.0
+    },
+    {
+      "id": "skill-auto-009",
+      "name": "SAGENT_4.0_GNN_Router",
+      "version": "1.0.0",
+      "status": "merged",
+      "created": "2026-05-14",
+      "last_tested": "2026-05-14",
+      "test_count": 0,
+      "fail_count": 0,
+      "trigger": "Need to route a task to the best matching skill using graph-based reasoning",
+      "pipeline": [
+        "Parse task into keyword features",
+        "Query SkillGraph for top-k candidates",
+        "Apply GNN propagation for confidence refinement",
+        "Run dual verification: GNN propose + LLM review",
+        "If strong match, suggest skill; if not, trigger crystallization"
+      ],
+      "source_session": "2026-05-14 SAGENT 4.0 implementation",
+      "tags": [
+        "sagent",
+        "gnn",
+        "router",
+        "merged"
+      ],
+      "evolution_notes": "自动结晶自任务执行路径",
+      "quality_warnings": [],
+      "merged_into": "skill-auto-010",
+      "success_rate": 0.0
+    },
+    {
+      "id": "skill-auto-015",
+      "name": "Perception_Layer_19Field_Packet",
+      "version": "1.0.0",
+      "status": "stable",
+      "created": "2026-05-14",
+      "last_tested": "2026-05-24",
+      "test_count": 5,
+      "fail_count": 0,
+      "trigger": "Need to process raw user input into structured 19-field task packet",
+      "pipeline": [
+        "Classify task type",
+        "Extract target objects",
+        "Assess complexity",
+        "Identify required skills via SAGENT routing",
+        "Evaluate risks + network + dependencies",
+        "Package into 19-field structured data packet"
+      ],
+      "source_session": "",
+      "tags": [
+        "perception",
+        "task-packet",
+        "19-fields"
+      ],
+      "evolution_notes": "自动结晶自任务执行路径",
+      "quality_warnings": [],
+      "success_rate": 1.0
+    },
+    {
+      "id": "skill-auto-016",
+      "name": "Dynamic_Verification_Loop",
+      "version": "1.0.0",
+      "status": "stable",
+      "created": "2026-05-14",
+      "last_tested": "2026-05-24",
+      "test_count": 5,
+      "fail_count": 0,
+      "trigger": "Need to verify execution plan quality and auto-retry with degraded fallback",
+      "pipeline": [
+        "Generate execution plan from chain.py",
+        "Verify: confidence check, tool availability, dependency completeness",
+        "If issues found: auto-adjust and regenerate (max 2 retries)",
+        "If all retries fail: use simplified degraded plan",
+        "Record retry count and final result to routing log"
+      ],
+      "source_session": "",
+      "tags": [
+        "verification",
+        "retry",
+        "degraded",
+        "quality"
+      ],
+      "evolution_notes": "自动结晶自任务执行路径",
+      "quality_warnings": [],
+      "success_rate": 1.0
+    },
+    {
+      "id": "skill-co-occurrence",
+      "name": "Skill Co-occurrence Edge Tracker",
+      "version": "1.0.0",
+      "status": "stable",
+      "created": "2026-05-15",
+      "last_tested": "2026-05-15",
+      "test_count": 3,
+      "fail_count": 0,
+      "trigger": "Multiple skills used together OR need skill complement recommendation",
+      "pipeline": [
+        "Record skills used together per task",
+        "Track co-occurrence frequency + success rate",
+        "Compute synergy_gain = co_rate - avg(solo_rates)",
+        "Recommend complementary skills for current task",
+        "Output: co_occurrence.json edges + node_stats"
+      ],
+      "source_pattern": "KernelGOD v8 — 技能图谱共现边 (P0)",
+      "tags": [
+        "skill-graph",
+        "co-occurrence",
+        "recommendation",
+        "synergy"
+      ],
+      "success_rate": 1.0
+    },
+    {
+      "id": "skill-causal-edges",
+      "name": "Skill Causal Edge Tracker",
+      "version": "1.0.0",
+      "status": "stable",
+      "created": "2026-05-15",
+      "last_tested": "2026-05-15",
+      "test_count": 3,
+      "fail_count": 0,
+      "trigger": "Ordered skill sequence execution OR need optimal skill ordering",
+      "pipeline": [
+        "Record skill execution sequences + results",
+        "Analyze A_success -> B_success conditional probability",
+        "Classify edge type: enhancer / prerequisite / blocker",
+        "Suggest optimal execution order via topological sort",
+        "Output: causal_edges.json + sequence optimizer"
+      ],
+      "source_pattern": "KernelGOD v8 — 技能图谱因果边 (P2)",
+      "tags": [
+        "skill-graph",
+        "causal",
+        "ordering",
+        "dependency"
+      ],
+      "success_rate": 1.0
+    },
+    {
+      "id": "skill-memory-hierarchy",
+      "name": "Four-Layer Memory Hierarchy",
+      "version": "1.0.0",
+      "status": "stable",
+      "created": "2026-05-15",
+      "last_tested": "2026-05-15",
+      "test_count": 3,
+      "fail_count": 0,
+      "trigger": "Session end OR daily cleanup OR need cross-turn memory recall",
+      "pipeline": [
+        "L1 Register: per-turn ephemeral -> memory/register/{turn}.json",
+        "L1->L2: auto-promote (importance>=0.6) -> memory/YYYY-MM-DD.md",
+        "L2->L3: key findings -> MEMORY.md long-term",
+        "L3->L4: auto-index to VectorStore LanceDB",
+        "Recall: query across short/long/persistent layers"
+      ],
+      "source_pattern": "KernelGOD v8 — 九大闭环#6 记忆闭环 (P1)",
+      "tags": [
+        "memory",
+        "hierarchy",
+        "register",
+        "short-term",
+        "long-term",
+        "persistent"
+      ],
+      "success_rate": 1.0
+    },
+    {
+      "id": "skill-sqlite-db",
+      "name": "SQLite Relational Database Adapter",
+      "version": "1.0.0",
+      "status": "stable",
+      "created": "2026-05-15",
+      "last_tested": "2026-05-15",
+      "test_count": 3,
+      "fail_count": 0,
+      "trigger": "JSON query slow OR need structured analytics OR task/skill/evaluation logging",
+      "pipeline": [
+        "Initialize SQLite DB: tasks / skill_usage / evaluations tables",
+        "Insert task records with hash tracking",
+        "Log skill usage per execution",
+        "Record 4-dim evaluation results",
+        "Query: top_failing / success_trend / skill_stats"
+      ],
+      "source_pattern": "KernelGOD v8 — 数据存储 (P3)",
+      "tags": [
+        "sqlite",
+        "database",
+        "analytics",
+        "structured-storage"
+      ],
+      "success_rate": 1.0
+    },
+    {
+      "id": "skill-real-embedding",
+      "name": "Real Vector Embedding (ST/TF-IDF fallback)",
+      "version": "1.0.0",
+      "status": "stable",
+      "created": "2026-05-15",
+      "last_tested": "2026-05-24",
+      "test_count": 7,
+      "fail_count": 1,
+      "trigger": "Semantic search OR vector-based skill matching OR sentence similarity",
+      "pipeline": [
+        "Try: from sentence_transformers import SentenceTransformer",
+        "If ST available: all-MiniLM-L6-v2 (384-dim, 80MB model)",
+        "Fallback: TF-IDF with bigram features (384-dim, zero deps)",
+        "Normalize vectors to unit length for cosine similarity",
+        "Auto-detect at import time, expose via VectorStore.vectorizer"
+      ],
+      "source_pattern": "KernelGOD v8 — 向量数据库 (P1)",
+      "tags": [
+        "embedding",
+        "vector",
+        "sentence-transformers",
+        "tf-idf",
+        "fallback"
+      ],
+      "success_rate": 0.86
+    },
+    {
+      "id": "skill-tool-validator",
+      "name": "Tool Executable Validator",
+      "version": "1.0.0",
+      "status": "stable",
+      "created": "2026-05-16",
+      "last_tested": "2026-05-16",
+      "test_count": 5,
+      "fail_count": 0,
+      "trigger": "Need to validate if a tool is executable or check dependency health",
+      "pipeline": [
+        "Scan tools list",
+        "Check path existence",
+        "Run --version",
+        "Check pip/npm packages",
+        "Auto-detect degradation"
+      ],
+      "source_pattern": "KernelGOD v8 P3 — tool valid",
+      "tags": [
+        "validation",
+        "tools",
+        "health",
+        "executable"
+      ],
+      "success_rate": 1.0
+    },
+    {
+      "id": "skill-quality-evaluator",
+      "name": "Task Quality Evaluator",
+      "version": "1.0.0",
+      "status": "stable",
+      "created": "2026-05-16",
+      "last_tested": "2026-05-16",
+      "test_count": 3,
+      "fail_count": 0,
+      "trigger": "Task complete — need quality scoring and grading",
+      "pipeline": [
+        "5-dim scoring: completeness/accuracy/efficiency/tool_health/degradation",
+        "Grade: A>=0.85 B>=0.7 C>=0.5 D>=0.3 F<0.3",
+        "Auto suggestions for retry"
+      ],
+      "source_pattern": "KernelGOD v8 P3 — quality eval",
+      "tags": [
+        "quality",
+        "scoring",
+        "evaluation",
+        "audit"
+      ],
+      "success_rate": 1.0
+    },
+    {
+      "id": "skill-evolution-pipeline",
+      "name": "Evolution Pipeline",
+      "version": "1.0.0",
+      "status": "stable",
+      "created": "2026-05-16",
+      "last_tested": "2026-05-24",
+      "test_count": 6,
+      "fail_count": 0,
+      "trigger": "High-quality patterns detected — auto-crystallize new skills",
+      "pipeline": [
+        "Detect from co-occurrence/causal/quality",
+        "Generate candidates",
+        "Quality gate: confidence>=0.6 + dedup",
+        "Auto-crystallize"
+      ],
+      "source_pattern": "KernelGOD v8 P3 — evolution pipeline",
+      "tags": [
+        "evolution",
+        "crystallize",
+        "pattern",
+        "auto"
+      ],
+      "success_rate": 1.0
+    },
+    {
+      "id": "skill-auto-tuner",
+      "name": "Adaptive Auto Tuner",
+      "version": "1.0.0",
+      "status": "stable",
+      "created": "2026-05-16",
+      "last_tested": "2026-05-24",
+      "test_count": 6,
+      "fail_count": 0,
+      "trigger": "Quality trends shift — auto-adjust system parameters",
+      "pipeline": [
+        "Load 7-day quality log",
+        "Compute metrics: retry_rate/degradation/acceptance",
+        "Generate adjustments for 5 params",
+        "Apply + save"
+      ],
+      "source_pattern": "KernelGOD v8 P4 — auto tuner",
+      "tags": [
+        "tuning",
+        "adaptive",
+        "optimization",
+        "self-adjust"
+      ],
+      "success_rate": 1.0
+    },
+    {
+      "id": "skill-monitor",
+      "name": "Skill Health Monitor",
+      "version": "1.0.0",
+      "status": "stable",
+      "created": "2026-05-16",
+      "last_tested": "2026-05-16",
+      "test_count": 3,
+      "fail_count": 0,
+      "trigger": "Periodic check OR skill degradation suspected",
+      "pipeline": [
+        "HealthCard per skill: success_rate/confidence_trend/response_trend",
+        "State: healthy->degraded->critical->needs_intervention",
+        "Alert on 3+ consecutive failures"
+      ],
+      "source_pattern": "KernelGOD v8 P4 — skill monitor",
+      "tags": [
+        "monitor",
+        "health",
+        "degradation",
+        "alert"
+      ],
+      "success_rate": 1.0
+    },
+    {
+      "id": "skill-cross-task",
+      "name": "Cross-Task Knowledge Transfer",
+      "version": "1.0.0",
+      "status": "stable",
+      "created": "2026-05-16",
+      "last_tested": "2026-05-24",
+      "test_count": 6,
+      "fail_count": 0,
+      "trigger": "Low quality task — search for similar high-quality pattern to transfer",
+      "pipeline": [
+        "Extract task signature (verbs+nouns)",
+        "Compute similarity to high-quality tasks",
+        "Detect domain analogy (pdf<->docx)",
+        "Suggest improvement transfer"
+      ],
+      "source_pattern": "KernelGOD v8 P4 — cross task",
+      "tags": [
+        "transfer",
+        "analogy",
+        "pattern",
+        "reuse"
+      ],
+      "success_rate": 1.0
+    },
+    {
+      "id": "skill-system-controller",
+      "name": "System Controller — neural symbiosis",
+      "version": "1.0.0",
+      "status": "stable",
+      "created": "2026-05-16",
+      "last_tested": "2026-05-16",
+      "test_count": 6,
+      "fail_count": 0,
+      "trigger": "Any task execution — enforce system-driven control with LLM audit trail",
+      "pipeline": [
+        "TaskPlanner: LLM understand task -> system verify plan",
+        "DecisionCoordinator: system select skills -> route",
+        "Executor: system orchestrate -> record execution",
+        "Auditor: zero LLM, system score 5-dim quality",
+        "ControlMode: system_driven/hybrid/llm_driven"
+      ],
+      "source_pattern": "LLM revolution — system calls the shots",
+      "tags": [
+        "controller",
+        "system-driven",
+        "brain-neuron",
+        "control",
+        "audit"
+      ],
+      "success_rate": 1.0
+    },
+    {
+      "id": "skill-sync-obsidian",
+      "name": "Sync-Obsidian (PARA Methodology)",
+      "version": "1.0.0",
+      "status": "stable",
+      "created": "2026-05-20",
+      "last_tested": "2026-05-24",
+      "test_count": 7,
+      "fail_count": 0,
+      "trigger": "同步Obsidian OR 备份记忆 OR update obsidian OR memory sync",
+      "pipeline": [
+        "Step 1: Read memory/*.md + MEMORY.md",
+        "Step 2: Convert to Obsidian format (Wiki links, tags, frontmatter)",
+        "Step 3: Write to D:/Obsidian/Inbox/",
+        "Step 4: Update mission-control/memory-index/"
+      ],
+      "source_session": "2026-05-20 Batch 1 skill creation",
+      "tags": [
+        "obsidian",
+        "sync",
+        "memory",
+        "para",
+        "backup"
+      ],
+      "evolution_notes": "从TOOLS.md萃取: Obsidian同步需求",
+      "success_rate": 1.0
+    },
+    {
+      "id": "skill-windows-cron",
+      "name": "Windows-Cron-Adapter",
+      "version": "1.0.0",
+      "status": "stable",
+      "created": "2026-05-20",
+      "last_tested": "2026-05-24",
+      "test_count": 13,
+      "fail_count": 0,
+      "trigger": "定时任务 OR cron OR 计划任务 OR schtasks",
+      "pipeline": [
+        "Step 1: schtasks /Query /FO CSV /NH to list all tasks",
+        "Step 2: schtasks /Create /SC DAILY /ST HH:MM /TN TaskName /TR cmd.exe /c ...",
+        "Step 3: schtasks /Query /TN TaskName to verify",
+        "Step 4: Write to memory/YYYY-MM-DD.md"
+      ],
+      "source_session": "2026-05-20 Batch 1 skill creation",
+      "tags": [
+        "windows",
+        "cron",
+        "scheduler",
+        "schtasks"
+      ],
+      "evolution_notes": "从 TOOLS.md 萃取",
+      "success_rate": 1.0
+    },
+    {
+      "id": "skill-gateway-restart",
+      "name": "Gateway-Restart-Diagnostics",
+      "version": "1.0.0",
+      "status": "stable",
+      "created": "2026-05-20",
+      "last_tested": "2026-05-24",
+      "test_count": 9,
+      "fail_count": 0,
+      "trigger": "网关重启 OR gateway restart OR node.exe 崩溃 OR QClaw 连不上",
+      "pipeline": [
+        "Step 1: Check node.exe process (Get-Process node)",
+        "Step 2: Read gateway log (openclaw.log)",
+        "Step 3: Attempt graceful restart (gateway restart)",
+        "Step 4: Verify port 18789 is listening",
+        "Step 5: Log result to memory/YYYY-MM-DD.md"
+      ],
+      "source_session": "2026-05-20 Batch 1 skill creation",
+      "tags": [
+        "gateway",
+        "restart",
+        "diagnostics",
+        "node",
+        "qclaw"
+      ],
+      "evolution_notes": "从 MEMORY.md 萃取",
+      "success_rate": 1.0
+    },
+    {
+      "id": "skill-wb-bridge",
+      "name": "WB-Bridge-Protocol",
+      "version": "1.0.0",
+      "status": "stable",
+      "created": "2026-05-20",
+      "last_tested": "2026-05-24",
+      "test_count": 8,
+      "fail_count": 0,
+      "trigger": "WorkBuddy OR WB桥接 OR mcp_chat OR 跨AI通信",
+      "pipeline": [
+        "Step 1: Write message to mcp_chat/{task_id}.in.json",
+        "Step 2: Wait for {task_id}.out.json (poll every 10s, max 120s)",
+        "Step 3: ACK the response (write status/{task_id}.json)",
+        "Step 4: Handle timeout (retry OR fallback to oc_daemon)"
+      ],
+      "source_session": "2026-05-20 Batch 1 skill creation",
+      "tags": [
+        "workbuddy",
+        "bridge",
+        "mcp-chat",
+        "protocol"
+      ],
+      "evolution_notes": "从 WorkBuddy 桥接经验萃取",
+      "success_rate": 1.0
+    },
+    {
+      "id": "skill-log-aggregation",
+      "name": "Log-Aggregation-Analyzer",
+      "version": "1.0.0",
+      "status": "stable",
+      "created": "2026-05-20",
+      "last_tested": "2026-05-24",
+      "test_count": 9,
+      "fail_count": 0,
+      "trigger": "分析日志 OR log analysis OR 聚合日志 OR 错误趋势",
+      "pipeline": [
+        "Step 1: Scan D:\\openclaw\\logs\\*.log",
+        "Step 2: Extract errors/warnings with timestamps",
+        "Step 3: Aggregate by error type and frequency",
+        "Step 4: Generate report (markdown table)",
+        "Step 5: Save to workspace/log-report-YYYYMMDD.md"
+      ],
+      "source_session": "2026-05-20 Batch 1 skill creation",
+      "tags": [
+        "log",
+        "aggregation",
+        "analysis",
+        "diagnostics"
+      ],
+      "evolution_notes": "从日志分析需求萃取",
+      "success_rate": 1.0
+    },
+    {
+      "id": "skill-optimization-loop",
+      "name": "Optimization-Loop",
+      "version": "1.0.0",
+      "status": "stable",
+      "created": "2026-05-21",
+      "last_tested": "2026-05-24",
+      "test_count": 16,
+      "fail_count": 0,
+      "success_rate": 1.0,
+      "trigger": "optimization OR retry OR self-healing OR LLM fix OR task failure",
+      "pipeline": [
+        "Step 1: Execute task_fn with args/kwargs",
+        "Step 2: On failure, call LLM generator to produce fix plan",
+        "Step 3: Apply retry delay (configurable)",
+        "Step 4: Re-execute with same args (max 2 retries)",
+        "Step 5: Return OptimizationResult with all attempt records"
+      ],
+      "tags": [
+        "optimization",
+        "retry",
+        "improvement",
+        "llm",
+        "self-healing",
+        "kernelgod"
+      ],
+      "depends_on": [],
+      "co_occurs_with": [
+        "skill-evolution-pipeline",
+        "skill-quality-evaluator",
+        "skill-execution-bridge"
+      ]
+    },
+    {
+      "id": "skill-reality-perception",
+      "name": "Reality Perception Loop (S3 ActivePerception)",
+      "version": "1.0.0",
+      "status": "stable",
+      "created": "2026-05-22",
+      "last_tested": "2026-05-22",
+      "test_count": 27,
+      "fail_count": 1,
+      "success_rate": 0.96,
+      "trigger": "系统资源监控 OR CPU/MEM/DISK OR 进程状态 OR 网络连通 OR 现实感知",
+      "pipeline": [
+        "cpu_usage() -> percent/per_cpu/count/freq",
+        "memory_usage() -> total/available/used/free/percent",
+        "disk_usage(paths) -> total/used/free/percent per path",
+        "process_list(filter) -> pid/name/memory_mb/cmdline",
+        "network_status() -> interfaces/io_stats/connectivity",
+        "snapshot() -> full system state dict",
+        "to_s3_format() -> KernelGOD S3 perception packet"
+      ],
+      "tags": [
+        "perception",
+        "monitor",
+        "system",
+        "cpu",
+        "memory",
+        "disk",
+        "network",
+        "kernelgod",
+        "s3"
+      ],
+      "source_session": "2026-05-22 WB Agent implementation",
+      "evolution_notes": "KernelGOD v8 第②环 — 现实感知闭环"
+    },
+    {
+      "id": "skill-obsidian-sync",
+      "name": "Obsidian Vault Sync",
+      "version": "1.0.0",
+      "status": "stable",
+      "created": "2026-05-24",
+      "last_tested": "2026-05-24",
+      "test_count": 5,
+      "fail_count": 0,
+      "trigger": "Memory updates or daily notes need syncing to Obsidian vault",
+      "pipeline": [
+        "Identify changed memory files in memory/*.md",
+        "Map content to Obsidian vault (D:\\Obsidian) PARA structure",
+        "Convert markdown headers to Obsidian-compatible format",
+        "Write synced files with frontmatter metadata",
+        "Log sync status to memory/obsidian-sync.log"
+      ],
+      "source_pattern": "memory-extraction#batch1b",
+      "tags": [
+        "obsidian",
+        "sync",
+        "memory",
+        "knowledge-management",
+        "markdown"
+      ],
+      "success_rate": 1.0
+    },
+    {
+      "id": "skill-gateway-diagnostics",
+      "name": "Gateway Health Diagnostics & Recovery",
+      "version": "1.0.0",
+      "status": "stable",
+      "created": "2026-05-24",
+      "last_tested": "2026-05-24",
+      "test_count": 5,
+      "fail_count": 0,
+      "trigger": "Gateway service (node.exe) unresponsive, missing, or port check fails",
+      "pipeline": [
+        "Check process: tasklist | findstr node.exe to find PID",
+        "Check port: netstat -ano | findstr :18789 for gateway",
+        "Read recent logs: D:\\openclaw\\logs\\*.log for error patterns",
+        "Safe restart: openclaw gateway restart with 5s delay",
+        "Verify: curl http://127.0.0.1:18789/status within 10s timeout",
+        "Fallback: if restart fails, check config conflicts"
+      ],
+      "source_pattern": "memory-extraction#batch1b",
+      "tags": [
+        "gateway",
+        "diagnostics",
+        "restart",
+        "monitoring",
+        "recovery"
+      ],
+      "success_rate": 1.0
+    },
+    {
+      "id": "skill-csv-analysis",
+      "name": "CSV/Excel Quick Analysis",
+      "version": "1.0.0",
+      "status": "stable",
+      "created": "2026-05-24",
+      "last_tested": "2026-05-24",
+      "test_count": 6,
+      "fail_count": 0,
+      "trigger": "User provides tabular data (CSV, XLSX, TSV) and asks for analysis or insights",
+      "pipeline": [
+        "Detect encoding: chardet or BOM check for CSV",
+        "Load with pandas (fallback to csv module if pandas unavailable)",
+        "Generate statistical summary: describe(), null counts, dtypes",
+        "Identify top-N patterns: top values, correlations, outliers",
+        "Output structured insight report in markdown"
+      ],
+      "source_pattern": "batch-generation#batch2",
+      "tags": [
+        "data-analysis",
+        "csv",
+        "excel",
+        "statistics",
+        "pandas"
+      ],
+      "success_rate": 1.0
+    },
+    {
+      "id": "skill-data-chart",
+      "name": "Data Chart Generator",
+      "version": "1.0.0",
+      "status": "stable",
+      "created": "2026-05-24",
+      "last_tested": "2026-05-24",
+      "test_count": 5,
+      "fail_count": 0,
+      "trigger": "User requests visualization, chart, or graph from data",
+      "pipeline": [
+        "Analyze data shape: pick chart type (bar/line/pie/scatter/histogram)",
+        "Generate with matplotlib: set Chinese font (SimHei), labels, legend",
+        "Save as PNG to workspace/charts/ with timestamp",
+        "Optionally generate HTML interactive version with plotly",
+        "Return chart path and key insights"
+      ],
+      "source_pattern": "batch-generation#batch2",
+      "tags": [
+        "visualization",
+        "chart",
+        "matplotlib",
+        "plotly",
+        "data"
+      ],
+      "success_rate": 1.0
+    },
+    {
+      "id": "skill-git-commit",
+      "name": "Git Smart Commit",
+      "version": "1.0.0",
+      "status": "stable",
+      "created": "2026-05-24",
+      "last_tested": "2026-05-24",
+      "test_count": 5,
+      "fail_count": 0,
+      "trigger": "Code changes detected in workspace git repo that need committing",
+      "pipeline": [
+        "git status --porcelain to list changes",
+        "Categorize: new files, modified, deleted, renamed",
+        "Generate commit message: type(scope): description format",
+        "Stage: git add with selective staging (avoid mass add)",
+        "Commit: git commit -m with generated message",
+        "Optionally: git push to remote"
+      ],
+      "source_pattern": "batch-generation#batch2",
+      "tags": [
+        "git",
+        "commit",
+        "version-control",
+        "automation",
+        "code"
+      ],
+      "success_rate": 1.0
+    },
+    {
+      "id": "skill-code-review",
+      "name": "Code Diff Reviewer",
+      "version": "1.0.0",
+      "status": "stable",
+      "created": "2026-05-24",
+      "last_tested": "2026-05-24",
+      "test_count": 5,
+      "fail_count": 0,
+      "trigger": "User asks for code review, quality check, or pull request review",
+      "pipeline": [
+        "git diff HEAD~1 or between specified refs to get changes",
+        "Classify changes: logic, config, docs, tests, refactor",
+        "Check: style violations, potential bugs, security issues, missing tests",
+        "Generate review: summary + file-level comments + overall risk score",
+        "Output as markdown with severity markers (HIGH/MEDIUM/LOW)"
+      ],
+      "source_pattern": "batch-generation#batch2",
+      "tags": [
+        "code-review",
+        "git",
+        "quality",
+        "security",
+        "diff"
+      ],
+      "success_rate": 1.0
+    },
+    {
+      "id": "skill-retry-strategy",
+      "name": "Retry Strategy Selector",
+      "version": "1.0.0",
+      "status": "stable",
+      "created": "2026-05-24",
+      "last_tested": "2026-05-24",
+      "test_count": 6,
+      "fail_count": 0,
+      "trigger": "Operation fails and needs intelligent retry with backoff",
+      "pipeline": [
+        "Parse error type: network timeout, rate-limit (429), server error (5xx), auth (401/403)",
+        "Select strategy: linear backoff (timeout), exponential (rate-limit), circuit-breaker (5xx burst), abort (auth)",
+        "Set max_retries: 3 for timeout, 5 for 429 with Retry-After header, 2 for 5xx",
+        "Execute retry loop with jitter (random 0-500ms)",
+        "Log all attempts and final result to structured output"
+      ],
+      "source_pattern": "batch-generation#batch2",
+      "tags": [
+        "retry",
+        "error-handling",
+        "resilience",
+        "network",
+        "circuit-breaker"
+      ],
+      "success_rate": 1.0
+    },
+    {
+      "id": "skill-batch-file",
+      "name": "Batch File Processor",
+      "version": "1.0.0",
+      "status": "stable",
+      "created": "2026-05-24",
+      "last_tested": "2026-05-24",
+      "test_count": 5,
+      "fail_count": 0,
+      "trigger": "Multiple files need the same operation (rename, convert, compress, search)",
+      "pipeline": [
+        "Scan directory: glob/recursive with file type filter",
+        "Build operation plan: file count, total size, estimated time",
+        "Execute in parallel: ThreadPoolExecutor for I/O, asyncio for network",
+        "Track progress: completed/total, speed, ETA",
+        "Error handling: skip failed files, collect errors, retry on transient",
+        "Generate summary report: success count, failures, skipped, total size processed"
+      ],
+      "source_pattern": "batch-generation#batch2",
+      "tags": [
+        "batch",
+        "file-processing",
+        "parallel",
+        "automation",
+        "bulk"
+      ],
+      "success_rate": 1.0
+    },
+    {
+      "id": "skill-report-gen",
+      "name": "Structured Report Generator",
+      "version": "1.0.0",
+      "status": "stable",
+      "created": "2026-05-24",
+      "last_tested": "2026-05-24",
+      "test_count": 5,
+      "fail_count": 0,
+      "trigger": "User needs a formal report, document, or summary from structured data or analysis",
+      "pipeline": [
+        "Select template: analysis-report, meeting-notes, project-status, incident-report",
+        "Populate sections: title, summary, details, findings, recommendations",
+        "Format: markdown with TOC, tables, code blocks, charts (if applicable)",
+        "Export options: .md (default), .docx (via python-docx), .pdf (via weasyprint)",
+        "Validate: check all sections filled, no placeholder text remaining"
+      ],
+      "source_pattern": "batch-generation#batch2",
+      "tags": [
+        "report",
+        "document",
+        "markdown",
+        "template",
+        "export"
+      ],
+      "success_rate": 1.0
+    },
+    {
+      "id": "skill-network-diag",
+      "name": "Network Diagnostics",
+      "version": "1.0.0",
+      "status": "stable",
+      "created": "2026-05-24",
+      "last_tested": "2026-05-24",
+      "test_count": 3,
+      "fail_count": 0,
+      "trigger": "Network issues detected: connection failures, DNS problems, proxy errors, or SSL errors",
+      "pipeline": [
+        "DNS check: nslookup + resolve test for critical domains",
+        "Port check: Test-NetConnection / nc for gateway (18789, 18998)",
+        "Proxy check: check system proxy settings, test bypass",
+        "SSL check: openssl s_client for certificate chain and expiry",
+        "Bandwidth: measure latency and throughput to key endpoints",
+        "Output diagnostic matrix: component, status, detail, recommendation"
+      ],
+      "source_pattern": "batch-generation#batch2",
+      "tags": [
+        "network",
+        "diagnostics",
+        "dns",
+        "ssl",
+        "proxy"
+      ],
+      "success_rate": 1.0
+    },
+    {
+      "id": "skill-win-service",
+      "name": "Windows Service Manager",
+      "version": "1.0.0",
+      "status": "stable",
+      "created": "2026-05-24",
+      "last_tested": "2026-05-24",
+      "test_count": 5,
+      "fail_count": 0,
+      "trigger": "Windows service needs start/stop/query/configure",
+      "pipeline": [
+        "Get-Service | Where-Object Status/Name matches pattern",
+        "Start/Stop-Service with -Force and timeout handling",
+        "Set-Service: set startup type (automatic/manual/disabled)",
+        "Read service logs: Get-EventLog -LogName System -Source Service*",
+        "Recovery: sc.exe failure flags to auto-restart on crash"
+      ],
+      "source_pattern": "batch-generation#batch3",
+      "tags": [
+        "windows",
+        "service",
+        "admin",
+        "automation",
+        "recovery"
+      ],
+      "success_rate": 1.0
+    },
+    {
+      "id": "skill-registry-safe",
+      "name": "Registry Safe Editor",
+      "version": "1.0.0",
+      "status": "stable",
+      "created": "2026-05-24",
+      "last_tested": "2026-05-24",
+      "test_count": 5,
+      "fail_count": 0,
+      "trigger": "Windows registry read/modify/backup needed",
+      "pipeline": [
+        "Backup: reg export HKLM\\Path\\Key backup.reg /y",
+        "Read: Get-ItemProperty -Path Registry::HKEY... -Name ValueName",
+        "Write: Set-ItemProperty with validation (read-back check)",
+        "Delete: Remove-ItemProperty with confirmation",
+        "Rollback plan: if write fails, restore from backup.reg"
+      ],
+      "source_pattern": "batch-generation#batch3",
+      "tags": [
+        "windows",
+        "registry",
+        "safety",
+        "backup",
+        "configuration"
+      ],
+      "success_rate": 1.0
+    },
+    {
+      "id": "skill-ssl-check",
+      "name": "SSL Certificate Checker",
+      "version": "1.0.0",
+      "status": "stable",
+      "created": "2026-05-24",
+      "last_tested": "2026-05-24",
+      "test_count": 5,
+      "fail_count": 0,
+      "trigger": "HTTPS endpoint certificate needs validation or expiry check",
+      "pipeline": [
+        "Connect: openssl s_client -connect host:port -servername host",
+        "Extract: x509 certificate details (subject, issuer, dates, SAN)",
+        "Check expiry: days_remaining = not_after - today",
+        "Verify chain: openssl verify -CAfile ca-bundle.crt cert.pem",
+        "Output: JSON with expiry_status, chain_valid, grade (A-F)"
+      ],
+      "source_pattern": "batch-generation#batch3",
+      "tags": [
+        "ssl",
+        "tls",
+        "certificate",
+        "security",
+        "monitoring"
+      ],
+      "success_rate": 1.0
+    },
+    {
+      "id": "skill-file-perm",
+      "name": "File Permission Auditor",
+      "version": "1.0.0",
+      "status": "stable",
+      "created": "2026-05-24",
+      "last_tested": "2026-05-24",
+      "test_count": 5,
+      "fail_count": 0,
+      "trigger": "Directory or file permission audit needed (Windows/Linux)",
+      "pipeline": [
+        "Scan: Get-Acl -Path directory -Recurse | Where-Object {...}",
+        "Extract: identity, filesystem rights, is_inherited, is_inherited",
+        "Anomaly detect: Everyone/FULLCONTROL, Anonymous, No owner",
+        "Compare: expected vs actual ACLs from policy definition",
+        "Report: CSV (path, identity, permission, risk_level)"
+      ],
+      "source_pattern": "batch-generation#batch3",
+      "tags": [
+        "security",
+        "permissions",
+        "audit",
+        "acl",
+        "compliance"
+      ],
+      "success_rate": 1.0
+    },
+    {
+      "id": "skill-config-migrate",
+      "name": "Configuration Migration Helper",
+      "version": "1.0.0",
+      "status": "stable",
+      "created": "2026-05-24",
+      "last_tested": "2026-05-24",
+      "test_count": 6,
+      "fail_count": 0,
+      "trigger": "Old system config needs migration to new format or new machine",
+      "pipeline": [
+        "Read old config: parse JSON/YAML/TOML/INI with schema detection",
+        "Map fields: old_key → new_key with transformation rules",
+        "Handle missing: default values, prompt user, or skip with warning",
+        "Validate new: schema check, type check, required field check",
+        "Write new: atomic write with .bak backup of existing new config"
+      ],
+      "source_pattern": "batch-generation#batch3",
+      "tags": [
+        "config",
+        "migration",
+        "transformation",
+        "validation",
+        "backup"
+      ],
+      "success_rate": 1.0
+    },
+    {
+      "id": "skill-test-scaffold",
+      "name": "Quick Test Scaffold",
+      "version": "1.0.0",
+      "status": "stable",
+      "created": "2026-05-24",
+      "last_tested": "2026-05-24",
+      "test_count": 5,
+      "fail_count": 0,
+      "trigger": "New module or function needs test coverage",
+      "pipeline": [
+        "Analyze module: functions, classes, public API, dependencies",
+        "Generate pytest scaffold: test_file.py with fixtures and parametrize",
+        "Mock external: unittest.mock or pytest-mock for I/O, network, time",
+        "Run: pytest test_file.py --tb=short -v",
+        "Coverage: pytest --cov=module --cov-report=term-missing"
+      ],
+      "source_pattern": "batch-generation#batch3",
+      "tags": [
+        "testing",
+        "pytest",
+        "scaffold",
+        "mock",
+        "coverage"
+      ],
+      "success_rate": 1.0
+    },
+    {
+      "id": "skill-regression",
+      "name": "Regression Detector",
+      "version": "1.0.0",
+      "status": "stable",
+      "created": "2026-05-24",
+      "last_tested": "2026-05-24",
+      "test_count": 6,
+      "fail_count": 0,
+      "trigger": "Suspected regression: something worked before, broken now",
+      "pipeline": [
+        "git bisect start HEAD good_commit (identify range)",
+        "git bisect run pytest tests/ (automated bisection)",
+        "Parse result: first bad commit hash, author, date, message",
+        "Analyze: diff of bad commit, identify root cause",
+        "Report: markdown with commit info, root cause, fix suggestion"
+      ],
+      "source_pattern": "batch-generation#batch3",
+      "tags": [
+        "regression",
+        "git-bisect",
+        "debugging",
+        "automation",
+        "root-cause"
+      ],
+      "success_rate": 1.0
+    },
+    {
+      "id": "skill-env-validator",
+      "name": "Environment Validator",
+      "version": "1.0.0",
+      "status": "stable",
+      "created": "2026-05-24",
+      "last_tested": "2026-05-24",
+      "test_count": 6,
+      "fail_count": 1,
+      "trigger": "Before deployment: validate all required tools/versions/paths exist",
+      "pipeline": [
+        "Read requirements: .env.example, requirements.txt, package.json, etc.",
+        "Check tools: command -v tool or Get-Command tool (cross-platform)",
+        "Check versions: tool --version, compare with semver constraints",
+        "Check paths: Test-Path or os.path.exists for required directories",
+        "Output matrix: component, required, found, status (pass/warn/fail)"
+      ],
+      "source_pattern": "batch-generation#batch3",
+      "tags": [
+        "environment",
+        "validation",
+        "deployment",
+        "pre-flight",
+        "check"
+      ],
+      "success_rate": 0.83
+    },
+    {
+      "name": "skill-pydantic-model",
+      "status": "stable",
+      "domain": "data-modeling",
+      "source": "github:pydantic/pydantic",
+      "stars": 20000,
+      "tags": [
+        "pydantic",
+        "validation",
+        "data-model",
+        "serialization",
+        "settings"
+      ],
+      "id": "skill-pydantic-model",
+      "version": "1.0.0",
+      "created": "2026-05-24",
+      "test_count": 1,
+      "fail_count": 0,
+      "success_rate": 1.0,
+      "pipeline": [
+        "validate",
+        "execute"
+      ],
+      "trigger": "Data validation, model definition, or serialization with Pydantic needed"
+    },
+    {
+      "name": "skill-api-fastapi",
+      "status": "stable",
+      "domain": "api-development",
+      "source": "github:tiangolo/fastapi",
+      "stars": 75000,
+      "tags": [
+        "fastapi",
+        "rest-api",
+        "scaffold",
+        "async",
+        "openapi"
+      ],
+      "id": "skill-api-fastapi",
+      "version": "1.0.0",
+      "created": "2026-05-24",
+      "test_count": 1,
+      "fail_count": 0,
+      "success_rate": 1.0,
+      "pipeline": [
+        "validate",
+        "execute"
+      ],
+      "trigger": "Create REST API, FastAPI scaffold, or OpenAPI endpoint needed"
+    },
+    {
+      "name": "skill-system-design",
+      "status": "stable",
+      "domain": "architecture",
+      "source": "github:donnemartin/system-design-primer",
+      "stars": 280000,
+      "tags": [
+        "system-design",
+        "scalability",
+        "architecture",
+        "distributed-systems",
+        "interview"
+      ],
+      "id": "skill-system-design",
+      "version": "1.0.0",
+      "created": "2026-05-24",
+      "test_count": 1,
+      "fail_count": 0,
+      "success_rate": 1.0,
+      "pipeline": [
+        "validate",
+        "execute"
+      ],
+      "trigger": "System architecture design, scalability planning, or distributed system patterns"
+    },
+    {
+      "name": "skill-python-project",
+      "status": "stable",
+      "domain": "dev-tooling",
+      "source": "github:psf/black+astral-sh/ruff+python-poetry/poetry",
+      "stars": 88000,
+      "tags": [
+        "python",
+        "project-scaffold",
+        "linting",
+        "formatting",
+        "packaging"
+      ],
+      "id": "skill-python-project",
+      "version": "1.0.0",
+      "created": "2026-05-24",
+      "test_count": 1,
+      "fail_count": 0,
+      "success_rate": 1.0,
+      "pipeline": [
+        "validate",
+        "execute"
+      ],
+      "trigger": "Python project setup, pyproject.toml, linting, or packaging configuration"
+    },
+    {
+      "name": "skill-workflow-patterns",
+      "status": "stable",
+      "domain": "orchestration",
+      "source": "github:PrefectHQ/prefect",
+      "stars": 16000,
+      "tags": [
+        "workflow",
+        "pipeline",
+        "retry",
+        "dag",
+        "task-orchestration"
+      ],
+      "id": "skill-workflow-patterns",
+      "version": "1.0.0",
+      "created": "2026-05-24",
+      "test_count": 1,
+      "fail_count": 0,
+      "success_rate": 1.0,
+      "pipeline": [
+        "validate",
+        "execute"
+      ],
+      "trigger": "Multi-step workflow, task pipeline, retry logic, or DAG orchestration needed"
+    },
+    {
+      "name": "skill-db-migration",
+      "status": "stable",
+      "domain": "database",
+      "source": "github:sqlalchemy/sqlalchemy",
+      "stars": 9000,
+      "tags": [
+        "sqlalchemy",
+        "alembic",
+        "migration",
+        "orm",
+        "database"
+      ],
+      "id": "skill-db-migration",
+      "version": "1.0.0",
+      "created": "2026-05-24",
+      "test_count": 1,
+      "fail_count": 0,
+      "success_rate": 1.0,
+      "pipeline": [
+        "validate",
+        "execute"
+      ],
+      "trigger": "Database migration, schema evolution, ORM model, or Alembic versioning needed"
+    },
+    {
+      "id": "skill-anysearch",
+      "name": "AnySearch Unified Search",
+      "status": "stable",
+      "version": "1.0.3",
+      "description": "Unified real-time search engine for AI agents, bypassing network restrictions. Supports general web search, vertical domain search, batch parallel search, and page extraction.",
+      "aliases": [
+        "anysearch",
+        "search api",
+        "web search",
+        "互联网搜索",
+        "网络搜索",
+        "查找信息",
+        "搜索引擎"
+      ],
+      "tags": [
+        "search",
+        "web",
+        "api",
+        "mcp",
+        "external-data"
+      ],
+      "trigger": "搜索, 查, 找, search, find, 最新, 查询",
+      "pipeline": [
+        "parse_query -> intent_detect -> list_domains_if_vertical -> search_api -> merge_results -> format_markdown"
+      ]
+    },
+    {
+      "id": "skill-cli-anything-blender",
+      "name": "CLI-Anything Blender — 3D建模与渲染",
+      "status": "stable",
+      "version": "1.0.0",
+      "description": "Stateful 3D scene editing from the command line via Blender. Supports modeling, animation, camera, lighting, materials, rendering.",
+      "aliases": [
+        "blender",
+        "3d",
+        "建模",
+        "渲染",
+        "动画"
+      ],
+      "tags": [
+        "3d",
+        "graphics",
+        "rendering",
+        "animation"
+      ],
+      "trigger": "blender, 3D, 建模, 渲染, 动画, 场景"
+    },
+    {
+      "id": "skill-cli-anything-libreoffice",
+      "name": "CLI-Anything LibreOffice — Office文档转换",
+      "status": "stable",
+      "version": "1.0.0",
+      "description": "Convert and manipulate Office documents (docx, xlsx, pptx, pdf) from the command line via LibreOffice.",
+      "aliases": [
+        "libreoffice",
+        "office",
+        "文档转换",
+        "pdf",
+        "docx"
+      ],
+      "tags": [
+        "office",
+        "document",
+        "conversion",
+        "pdf"
+      ],
+      "trigger": "office, 文档, 转换, pdf, docx, xlsx"
+    }
+  ],
+  "version_history": {
+    "skill-pdf-extraction": [
+      {
+        "version": "1.0.0",
+        "date": "2026-05-10",
+        "status": "stable"
+      },
+      {
+        "version": "2.0.0",
+        "date": "2026-05-10",
+        "status": "stable"
+      },
+      {
+        "version": "2.1.0",
+        "date": "2026-05-10",
+        "status": "stable"
+      }
+    ],
+    "skill-dns-bypass": [
+      {
+        "version": "1.0.0",
+        "date": "2026-05-10",
+        "status": "beta"
+      },
+      {
+        "version": "2.0.0",
+        "date": "2026-05-10",
+        "status": "failed"
+      },
+      {
+        "version": "3.0.0",
+        "date": "2026-05-14",
+        "status": "stable"
+      }
+    ],
+    "skill-spa-extraction": [
+      {
+        "version": "2.0.0",
+        "date": "2026-05-10",
+        "status": "stable"
+      }
+    ],
+    "skill-encoding-handling": [
+      {
+        "version": "1.0.0",
+        "date": "2026-05-10",
+        "status": "stable"
+      },
+      {
+        "version": "2.0.0",
+        "date": "2026-05-10",
+        "status": "stable"
+      }
+    ],
+    "skill-cross-session": [
+      {
+        "version": "1.0.0",
+        "date": "2026-05-10",
+        "status": "stable"
+      },
+      {
+        "version": "1.2.0",
+        "date": "2026-05-10",
+        "status": "stable"
+      }
+    ],
+    "skill-preference-registration": [
+      {
+        "version": "1.0.0",
+        "date": "2026-05-10",
+        "status": "stable"
+      }
+    ],
+    "skill-cmd-compatibility": [
+      {
+        "version": "1.0.0",
+        "date": "2026-05-10",
+        "status": "stable"
+      }
+    ],
+    "skill-auto-008": [
+      {
+        "version": "1.0.0",
+        "date": "2026-05-14",
+        "status": "stable"
+      }
+    ],
+    "skill-auto-009": [
+      {
+        "version": "1.0.0",
+        "date": "2026-05-14",
+        "status": "merged"
+      }
+    ],
+    "skill-auto-010": [
+      {
+        "version": "1.0.0",
+        "date": "2026-05-14",
+        "status": "beta"
+      }
+    ],
+    "skill-auto-011": [
+      {
+        "version": "1.0.0",
+        "date": "2026-05-14",
+        "status": "beta"
+      }
+    ],
+    "skill-auto-012": [
+      {
+        "version": "1.0.0",
+        "date": "2026-05-14",
+        "status": "beta"
+      }
+    ],
+    "skill-auto-013": [
+      {
+        "version": "1.0.0",
+        "date": "2026-05-14",
+        "status": "beta"
+      }
+    ],
+    "skill-auto-014": [
+      {
+        "version": "1.0.0",
+        "date": "2026-05-14",
+        "status": "beta"
+      }
+    ],
+    "skill-auto-015": [
+      {
+        "version": "1.0.0",
+        "date": "2026-05-14",
+        "status": "beta"
+      }
+    ],
+    "skill-auto-016": [
+      {
+        "version": "1.0.0",
+        "date": "2026-05-14",
+        "status": "beta"
+      }
+    ]
+  },
+  "evolution_log": [
+    {
+      "date": "2026-05-14",
+      "action": "system_upgrade",
+      "description": "Integrated GenericAgent architecture: skill registry + crystallization pipeline + layered memory",
+      "skills_affected": "all"
+    },
+    {
+      "date": "2026-05-14",
+      "action": "crystallize",
+      "description": "技能结晶: skill-auto-008 (GitHub_API_DNS_bypass)",
+      "skills_affected": [
+        "skill-auto-008"
+      ]
+    },
+    {
+      "date": "2026-05-14",
+      "action": "crystallize",
+      "description": "技能结晶: skill-auto-009 (GitHub_API_DNS_bypass)",
+      "skills_affected": [
+        "skill-auto-009"
+      ]
+    },
+    {
+      "date": "2026-05-14",
+      "action": "crystallize",
+      "description": "技能结晶: skill-auto-008 (GenericAgent_Architecture_Migration)",
+      "skills_affected": [
+        "skill-auto-008"
+      ]
+    },
+    {
+      "date": "2026-05-14",
+      "action": "crystallize",
+      "description": "技能结晶: skill-auto-009 (SAGENT_4.0_GNN_Router)",
+      "skills_affected": [
+        "skill-auto-009"
+      ]
+    },
+    {
+      "date": "2026-05-14",
+      "action": "crystallize",
+      "description": "技能结晶: skill-auto-010 (Router_V2_5Pass_Scoring)",
+      "skills_affected": [
+        "skill-auto-010"
+      ]
+    },
+    {
+      "date": "2026-05-14",
+      "action": "consolidate",
+      "description": "合并 skill-auto-009 v1.0.0 → skill-auto-010 v1.0.1",
+      "skills_affected": [
+        "skill-auto-009",
+        "skill-auto-010"
+      ]
+    },
+    {
+      "date": "2026-05-14",
+      "action": "crystallize",
+      "description": "技能结晶: skill-auto-011 (Skill_Chain_Composer)",
+      "skills_affected": [
+        "skill-auto-011"
+      ]
+    },
+    {
+      "date": "2026-05-14",
+      "action": "crystallize",
+      "description": "技能结晶: skill-auto-012 (Tender_Bid_Document_Generation)",
+      "skills_affected": [
+        "skill-auto-012"
+      ]
+    },
+    {
+      "date": "2026-05-14",
+      "action": "crystallize",
+      "description": "技能结晶: skill-auto-013 (Perception_Bridge_L2)",
+      "skills_affected": [
+        "skill-auto-013"
+      ]
+    },
+    {
+      "date": "2026-05-14",
+      "action": "l7_optimization_loop",
+      "description": "L7优化: 0自动/7人工, 余0高风险",
+      "skills_affected": "all"
+    },
+    {
+      "date": "2026-05-14",
+      "action": "l7_optimization_loop",
+      "description": "L7优化: 0自动/1人工, 余0高风险",
+      "skills_affected": "all"
+    },
+    {
+      "date": "2026-05-14",
+      "action": "crystallize",
+      "description": "技能结晶: skill-auto-014 (L7_Optimization_Loop)",
+      "skills_affected": [
+        "skill-auto-014"
+      ]
+    },
+    {
+      "date": "2026-05-14",
+      "action": "crystallize",
+      "description": "技能结晶: skill-auto-015 (Perception_Layer_19Field_Packet)",
+      "skills_affected": [
+        "skill-auto-015"
+      ]
+    },
+    {
+      "date": "2026-05-14",
+      "action": "crystallize",
+      "description": "技能结晶: skill-auto-016 (Dynamic_Verification_Loop)",
+      "skills_affected": [
+        "skill-auto-016"
+      ]
+    },
+    {
+      "date": "2026-05-16",
+      "action": "solidify",
+      "description": "Solidified P3/P4/SystemController: 7 new skills. KernelGOD alignment ~98%",
+      "skills_affected": [
+        "skill-tool-validator",
+        "skill-quality-evaluator",
+        "skill-evolution-pipeline",
+        "skill-auto-tuner",
+        "skill-monitor",
+        "skill-cross-task",
+        "skill-system-controller"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "type": "co-occurrence",
+      "weight": 0.8,
+      "from": "skill-pdf-extraction",
+      "to": "skill-encoding-handling",
+      "note": "PDF often has encoding issues"
+    },
+    {
+      "type": "co-occurrence",
+      "weight": 0.7,
+      "from": "skill-dns-bypass",
+      "to": "skill-cmd-compatibility",
+      "note": "DNS bypass often uses curl.exe"
+    },
+    {
+      "type": "co-occurrence",
+      "weight": 0.6,
+      "from": "skill-spa-extraction",
+      "to": "skill-dns-bypass",
+      "note": "SPA extraction often needs DNS bypass"
+    },
+    {
+      "type": "causal",
+      "weight": 0.9,
+      "from": "skill-encoding-handling",
+      "to": "skill-pdf-extraction",
+      "note": "Fix encoding before PDF extraction works"
+    },
+    {
+      "type": "causal",
+      "weight": 0.8,
+      "from": "skill-dns-bypass",
+      "to": "skill-spa-extraction",
+      "note": "Bypass DNS first, then scrape SPA"
+    },
+    {
+      "type": "dependency",
+      "weight": 1.0,
+      "from": "skill-cross-session",
+      "to": "skill-preference-registration",
+      "note": "Need context before registering preference"
+    },
+    {
+      "type": "dependency",
+      "weight": 0.7,
+      "from": "skill-pdf-extraction",
+      "to": "skill-spa-extraction",
+      "note": "PDF extraction skills needed before web"
+    }
+  ],
+  "_edge_schema": {
+    "co-occurrence": "Skills used together frequently",
+    "causal": "Skill A improves performance of skill B",
+    "dependency": "Skill A must run before skill B"
+  },
+  "total": 6,
+  "summary": {
+    "stable": 53,
+    "beta": 0,
+    "failed": 0,
+    "total": 54
+  }
+}
